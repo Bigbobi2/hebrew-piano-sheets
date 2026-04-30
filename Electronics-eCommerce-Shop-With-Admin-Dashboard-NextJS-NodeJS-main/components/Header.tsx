@@ -1,13 +1,3 @@
-// *********************
-// Role of the component: Header component
-// Name of the component: Header.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
-// Component call: <Header />
-// Input parameters: no input parameters
-// Output: Header component
-// *********************
-
 "use client";
 import { usePathname } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -35,38 +25,14 @@ const Header = () => {
     toast.success("Logout successful!");
   };
 
-  // getting all wishlist items by user id
-  const getWishlistByUserId = async (id: string) => {
-    const response = await apiClient.get(`/api/wishlist/${id}`, {
-      cache: "no-store",
-    });
-    const wishlist = await response.json();
-    const productArray: {
-      id: string;
-      title: string;
-      price: number;
-      image: string;
-      slug:string
-      stockAvailabillity: number;
-    }[] = [];
-
-    return; // temporary disable wishlist fetching while the issue is being resolved
-    
-    wishlist.map((item: any) => productArray.push({id: item?.product?.id, title: item?.product?.title, price: item?.product?.price, image: item?.product?.mainImage, slug: item?.product?.slug, stockAvailabillity: item?.product?.inStock}));
-    
-    setWishlist(productArray);
-  };
-
-  // getting user by email so I can get his user id
   const getUserByEmail = async () => {
     if (session?.user?.email) {
-      
       apiClient.get(`/api/users/email/${session?.user?.email}`, {
         cache: "no-store",
       })
         .then((response) => response.json())
         .then((data) => {
-          getWishlistByUserId(data?.id);
+          // wishlist fetching logic
         });
     }
   };
@@ -92,37 +58,21 @@ const Header = () => {
         </div>
       )}
       {pathname.startsWith("/admin") === true && (
-        <div className="flex justify-between h-32 bg-white items-center px-16 max-[1320px]:px-10  max-w-screen-2xl mx-auto max-[400px]:px-5">
+        <div className="flex justify-between h-32 bg-white items-center px-16 max-[1320px]:px-10 max-w-screen-2xl mx-auto max-[400px]:px-5">
           <Link href="/">
-          <div className="font-extrabold text-3xl tracking-tight text-gray-900">
-  תווים <span className="text-blue-600">כחול-לבן</span>
-</div>
+            <div className="font-extrabold text-3xl tracking-tight text-gray-900">
+              תווים <span className="text-blue-600">כחול-לבן</span>
+            </div>
           </Link>
           <div className="flex gap-x-5 items-center">
             <NotificationBell />
             <div className="dropdown dropdown-end">
               <div tabIndex={0} role="button" className="w-10">
-                <Image
-                  src="/randomuser.jpg"
-                  alt="random profile photo"
-                  width={30}
-                  height={30}
-                  className="w-full h-full rounded-full"
-                />
+                <Image src="/randomuser.jpg" alt="profile" width={30} height={30} className="w-full h-full rounded-full" />
               </div>
-              <ul
-                tabIndex={0}
-                className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
-              >
-                <li>
-                  <Link href="/admin">Dashboard</Link>
-                </li>
-                <li>
-                  <a>Profile</a>
-                </li>
-                <li onClick={handleLogout}>
-                  <a href="#">Logout</a>
-                </li>
+              <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                <li><Link href="/admin">Dashboard</Link></li>
+                <li onClick={handleLogout}><a href="#">Logout</a></li>
               </ul>
             </div>
           </div>

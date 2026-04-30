@@ -94,5 +94,17 @@ export const navigation = {
     { name: "שאלות נפוצות", href: "#" },
   ],
 };
+// פונקציות אימות נתונים
+export const isValidName = (name: string) => {
+  return name.length >= 2;
+};
 
+export const isValidEmailAddressFormat = (email: string) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+export const isValidPassword = (password: string) => {
+  return password.length >= 6;
+};
 // Keep the validation functions (isValidName, isValidEmail, etc.) below as they are perfectly fine for any store!

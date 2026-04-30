@@ -1,61 +1,44 @@
-import { ProductItem, SectionTitle } from "@/components";
-import apiClient from "@/lib/api";
-import React from "react";
-import { sanitize } from "@/lib/sanitize";
+import ProductCard from "@/components/ProductCard";
+import prisma from "@/utils/db";
 
-interface Props {
-  searchParams: { search: string };
+interface SearchPageProps {
+  searchParams: Promise<{ q?: string }>;
 }
 
-// sending api request for search results for a given search text
-const SearchPage = async ({ searchParams }: Props) => {
-  const sp = await searchParams;
-  let products = [];
+export default async function SearchPage({ searchParams }: SearchPageProps) {
+  // Grab the search word from the URL (e.g., if they typed "Somewhere")
+  const { q } = await searchParams;
 
-  try {
-    const data = await apiClient.get(
-      `/api/search?query=${sp?.search || ""}`
-    );
-
-    if (!data.ok) {
-      console.error('Failed to fetch search results:', data.statusText);
-      products = [];
-    } else {
-      const result = await data.json();
-      products = Array.isArray(result) ? result : [];
-    }
-  } catch (error) {
-    console.error('Error fetching search results:', error);
-    products = [];
-  }
+  // Fetch products from the database
+  const products = await prisma.product.findMany({
+    where: q
+      ? {
+          title: {
+            contains: q,
+          },
+        }
+      : undefined,
+  });
 
   return (
-    <div>
-      <SectionTitle title="Search Page" path="Home | Search" />
-      <div className="max-w-screen-2xl mx-auto">
-        {sp?.search && (
-          <h3 className="text-4xl text-center py-10 max-sm:text-3xl">
-            Showing results for {sanitize(sp?.search)}
-          </h3>
+    <div className="bg-white min-h-screen text-black">
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <h1 className="text-3xl font-extrabold mb-8">
+          {q ? `Search results for "${q}"` : "All Sheet Music"}
+        </h1>
+
+        {/* If no products are found */}
+        {products.length === 0 ? (
+          <p className="text-gray-500 text-lg">No sheet music found. Try another search!</p>
+        ) : (
+          /* The Grid of Product Cards */
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            {products.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
         )}
-        <div className="grid grid-cols-4 justify-items-center gap-x-2 gap-y-5 max-[1300px]:grid-cols-3 max-lg:grid-cols-2 max-[500px]:grid-cols-1">
-          {products.length > 0 ? (
-            products.map((product: any) => (
-              <ProductItem key={product.id} product={product} color="black" />
-            ))
-          ) : (
-            <h3 className="text-3xl mt-5 text-center w-full col-span-full max-[1000px]:text-2xl max-[500px]:text-lg">
-              No products found for specified query
-            </h3>
-          )}
-        </div>
       </div>
     </div>
   );
-};
-
-export default SearchPage;
-
-/*
-
-*/
+}
