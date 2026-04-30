@@ -1,12 +1,12 @@
-import { CategoryMenu, Hero, Incentives, IntroducingSection, Newsletter, ProductsSection } from "@/components";
+import { Hero } from "@/components";
 
 export default function Home() {
   return (
-    <>
-    <Hero />
-    <IntroducingSection />
-    <CategoryMenu />
-    <ProductsSection />
-    </>
+    <main className="bg-white min-h-screen">
+      <Hero />
+      
+      {/* We will add a modern, minimalist sheet music feed right here next! */}
+      
+    </main>
   );
 }

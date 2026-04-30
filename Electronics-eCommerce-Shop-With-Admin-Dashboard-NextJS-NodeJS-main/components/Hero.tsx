@@ -10,36 +10,39 @@
 
 import Image from "next/image";
 import React from "react";
+// ... (keep the imports at the top)
 
 const Hero = () => {
   return (
-    <div className="h-[700px] w-full bg-blue-500 max-lg:h-[900px] max-md:h-[750px]">
-      <div className="grid grid-cols-3 items-center justify-items-center px-10 gap-x-10 max-w-screen-2xl mx-auto h-full max-lg:grid-cols-1 max-lg:py-10 max-lg:gap-y-10">
-        <div className="flex flex-col gap-y-5 max-lg:order-last col-span-2">
-          <h1 className="text-6xl text-white font-bold mb-3 max-xl:text-5xl max-md:text-4xl max-sm:text-3xl">
-            THE PRODUCT OF THE FUTURE
-          </h1>
-          <p className="text-white max-sm:text-sm">
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolor modi
-            iure laudantium necessitatibus ab, voluptates vitae ullam. Officia
-            ipsam iusto beatae nesciunt, consequatur deserunt minima maiores
-            earum obcaecati. Optio, nam!
-          </p>
-          <div className="flex gap-x-1 max-lg:flex-col max-lg:gap-y-1">
-            <button className="bg-white text-blue-600 font-bold px-12 py-3 max-lg:text-xl max-sm:text-lg hover:bg-gray-100">
-              BUY NOW
-            </button>
-            <button className="bg-white text-blue-600 font-bold px-12 py-3 max-lg:text-xl max-sm:text-lg hover:bg-gray-100">
-              LEARN MORE
-            </button>
-          </div>
+   <div className="bg-[var(--secondary)] text-white min-h-screen px-6 md:px-12 flex flex-row items-center justify-between gap-12">
+      
+      {/* Text Section */}
+<div className="md:w-3/4 flex flex-col items-center text-center px-8 md:px-16">
+    <h1 className="font-extrabold text-5xl md:text-6xl mb-6 leading-tight">
+        תווים לפסנתר <br /> לכל שיר בעברית
+    </h1>
+        
+        <p className="text-xl text-gray-300 mb-10 max-w-xl md:max-w-lg">
+          המאגר המקצועי ביותר בישראל לתווים לפסנתר.<br />  
+          כל הלהיטים בעברית בתווים מקצועים מדויקים ואיכותיים לפסנתר למתחיל, ולמתקדם
+        </p>
+        
+        <div className="flex gap-4">
+          <button className="bg-[var(--primary)] text-[var(--secondary)] px-10 py-4 font-semibold rounded-full hover:bg-white hover:text-[var(--primary)] transition duration-300">
+            למאגר 
+          </button>
         </div>
-        <Image
-          src="/watch for banner.png"
-          width={400}
-          height={400}
-          alt="smart watch"
-          className="max-md:w-[300px] max-md:h-[300px] max-sm:h-[250px] max-sm:w-[250px] w-auto h-auto"
+      </div>
+
+      {/* Image Section - UPDATED TO BGImage */}
+      <div className="md:w-1/2 flex justify-center md:justify-end">
+        <Image 
+          src="/BGImage.jpg"  // <--- Check your extension! Use .jpg, .png, or .jpeg based on your file.
+          alt="תווים על פסנתר"
+          width={700}
+          height={700}
+          className="rounded-xl shadow-2xl object-cover" // Added object-cover for a cleaner modern look
+          priority
         />
       </div>
     </div>
