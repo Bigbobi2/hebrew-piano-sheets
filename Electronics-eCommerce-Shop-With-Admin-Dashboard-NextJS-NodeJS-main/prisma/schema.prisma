@@ -1,8 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// This is your Prisma schema file
+// Finalized for Piano Sheet Music Marketplace
 
 generator client {
   provider = "prisma-client-js"
@@ -13,24 +10,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// THE CLEANED PRODUCT MODEL
 model Product {
-  id           String   @id @default(uuid())
-  slug         String   @unique   // e.g., "wonderful-tonight-electric"
-  title        String             // e.g., "Wonderful Tonight [electric]"
-  mainImage    String             // Path to your sheet music preview
-  price        Float              // e.g., 20.0
-  rating       Float?   @default(0)
-  description  String?  @db.Text   // For the "Arrangement" details
+  artist      String?
+  id          String   @id @default(uuid())
+  slug        String   @unique   // e.g., "somewhere-only-we-know-piano"
+  title       String             // e.g., "Somewhere Only We Know"
+  mainImage   String             // Path to the sheet music preview (e.g., /sheets/song_page_1.png)
+  price       Float              // e.g., 20.0
+  rating      Float?   @default(0)
+  description String?  @db.Text  // For arrangement or composer details
   
-  // Scoring & Instrument info (To match your Musicnotes screenshot)
-  scoring      String?            // e.g., "Guitar TAB"
-  instruments  String?            // e.g., "Guitar or Electric Guitar"
-  pages        Int?     @default(1)
+  // Sheet Music Specifics
+  scoring     String?            // e.g., "Piano Solo"
+  instruments String?            // e.g., "Piano"
+  pages       Int?     @default(1)
+  difficulty  String?            // e.g., "קל", "מתקדם", "קשה"
 
-  // Minimal relations (Required for the site to function)
-  categoryId   String?
-  category     Category? @relation(fields: [categoryId], references: [id])
+  // Relations
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id])
   
   wishlists               Wishlist[]
   customer_order_products customer_order_product[]
@@ -42,11 +40,11 @@ model Category {
 }
 
 model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  password      String?
-  role          String?        @default("user")
-  Wishlist      Wishlist[]
+  id       String     @id @default(uuid())
+  email    String     @unique
+  password String?
+  role     String?    @default("user")
+  Wishlist Wishlist[]
 }
 
 model Wishlist {
@@ -58,11 +56,11 @@ model Wishlist {
 }
 
 model Customer_order {
-  id        String                   @id @default(uuid())
-  email     String
-  total     Int
-  status    String                   @default("PENDING")
-  products  customer_order_product[]
+  id       String                   @id @default(uuid())
+  email    String
+  total    Int
+  status   String                   @default("PENDING")
+  products customer_order_product[]
 }
 
 model customer_order_product {

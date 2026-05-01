@@ -1,107 +1,49 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { persist } from "zustand/middleware";
 
-export type ProductInCart = {
+type Product = {
   id: string;
   title: string;
   price: number;
   image: string;
-  amount: number;
+  cartItemId?: string; // Add this line
 };
 
-export type State = {
-  products: ProductInCart[];
-  allQuantity: number;
-  total: number;
-};
-
-export type Actions = {
-  addToCart: (newProduct: ProductInCart) => void;
-  removeFromCart: (id: string) => void;
-  updateCartAmount: (id: string, quantity: number) => void;
-  calculateTotals: () => void;
+type Store = {
+  products: Product[];
+  totalAmount: number;
+  addToCart: (product: Product) => void;
+  removeFromCart: (cartItemId: string) => void; // Change this from productId
   clearCart: () => void;
 };
 
-export const useProductStore = create<State & Actions>()(
+export const useProductStore = create<Store>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       products: [],
-      allQuantity: 0,
-      total: 0,
-      addToCart: (newProduct) => {
-        set((state) => {
-          const cartItem = state.products.find(
-            (item) => item.id === newProduct.id
-          );
-          if (!cartItem) {
-            return { products: [...state.products, newProduct] };
-          } else {
-            state.products.map((product) => {
-              if (product.id === cartItem.id) {
-                product.amount += newProduct.amount;
-              }
-            });
-          }
-          return { products: [...state.products] };
-        });
-      },
-      clearCart: () => {
-        set((state: any) => {
-          
-          return {
-            products: [],
-            allQuantity: 0,
-            total: 0,
-          };
-        });
-      },
-      removeFromCart: (id) => {
-        set((state) => {
-          state.products = state.products.filter(
-            (product: ProductInCart) => product.id !== id
-          );
-          return { products: state.products };
-        });
+      totalAmount: 0,
+
+      addToCart: (product) => {
+        // Create a unique ID for this specific addition to the cart
+        const productWithUniqueId = { 
+          ...product, 
+          cartItemId: Math.random().toString(36).substring(7) + Date.now() 
+        };
+        
+        const updatedProducts = [...get().products, productWithUniqueId];
+        const total = updatedProducts.reduce((sum, item) => sum + item.price, 0);
+        set({ products: updatedProducts, totalAmount: total });
       },
 
-      calculateTotals: () => {
-        set((state) => {
-          let amount = 0;
-          let total = 0;
-          state.products.forEach((item) => {
-            amount += item.amount;
-            total += item.amount * item.price;
-          });
-
-          return {
-            products: state.products,
-            allQuantity: amount,
-            total: total,
-          };
-        });
+      removeFromCart: (cartItemId) => {
+        // Filter by the UNIQUE cartItemId
+        const filteredProducts = get().products.filter((p) => p.cartItemId !== cartItemId);
+        const total = filteredProducts.reduce((sum, item) => sum + item.price, 0);
+        set({ products: filteredProducts, totalAmount: total });
       },
-      updateCartAmount: (id, amount) => {
-        set((state) => {
-          const cartItem = state.products.find((item) => item.id === id);
 
-          if (!cartItem) {
-            return { products: [...state.products] };
-          } else {
-            state.products.map((product) => {
-              if (product.id === cartItem.id) {
-                product.amount = amount;
-              }
-            });
-          }
-
-          return { products: [...state.products] };
-        });
-      },
+      clearCart: () => set({ products: [], totalAmount: 0 }),
     }),
-    {
-      name: "products-storage", // name of the item in the storage (must be unique)
-      storage: createJSONStorage(() => sessionStorage), // (optional) by default, 'localStorage' is used
-    }
+    { name: "cart-storage" }
   )
 );

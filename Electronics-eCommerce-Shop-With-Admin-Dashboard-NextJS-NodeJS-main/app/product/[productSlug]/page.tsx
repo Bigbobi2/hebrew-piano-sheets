@@ -1,10 +1,9 @@
-import { ProductTabs } from "@/components";
+import AddToCartSingleProductBtn from "@/components/AddToCartSingleProductBtn";
+import BuyNowSingleProductBtn from "@/components/BuyNowSingleProductBtn";
+import SheetPreview from "@/components/SheetPreview";
 import prisma from "@/utils/db";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import React from "react";
-import { FaSquareFacebook, FaSquareXTwitter, FaSquarePinterest } from "react-icons/fa6";
-import { sanitize } from "@/lib/sanitize";
 
 interface SingleProductPageProps {
   params: Promise<{ productSlug: string }>;
@@ -13,7 +12,6 @@ interface SingleProductPageProps {
 const SingleProductPage = async ({ params }: SingleProductPageProps) => {
   const { productSlug } = await params;
 
-  // 1. Fetch the product directly from the database using the slug
   const product = await prisma.product.findFirst({
     where: { slug: productSlug },
   });
@@ -22,78 +20,80 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
     notFound();
   }
 
+  const cleanImagePath = product.mainImage?.startsWith('/') 
+    ? product.mainImage 
+    : `/${product.mainImage}`;
+
+  const translateInstrument = (inst: string | null) => {
+    if (!inst || inst.toLowerCase() === 'piano') return 'פסנתר';
+    return inst;
+  };
+
   return (
-    <div className="bg-white text-black min-h-screen">
+    <div className="bg-white text-black min-h-screen" dir="rtl">
       <div className="max-w-6xl mx-auto px-6 py-12 flex flex-col md:flex-row gap-12">
         
-        {/* LEFT SIDE: Sheet Music Preview */}
+        {/* RIGHT SIDE: Preview */}
         <div className="md:w-1/2 flex justify-center">
-          <div className="relative border border-gray-200 shadow-xl rounded-md bg-white p-2 h-fit">
-            <Image
-              src={product.mainImage ? `/${product.mainImage}` : "/product_placeholder.jpg"}
-              alt={product.title}
-              width={500}
-              height={700}
-              className="object-contain"
-              priority
-            />
-            
-            {/* Watermark Overlay */}
-            <div className="absolute bottom-10 right-10 bg-white/90 backdrop-blur-sm rounded-full p-6 shadow-lg text-center w-40 h-40 flex flex-col justify-center items-center border border-gray-100">
-              <h3 className="font-bold text-gray-800 text-sm">PREVIEW ONLY</h3>
-              <p className="text-[10px] text-gray-500 mt-1 text-center">Legal use requires purchase</p>
-            </div>
-          </div>
+          <SheetPreview 
+            mainImage={cleanImagePath} 
+            title={product.title} 
+            totalPages={Number(product.pages) || 1} 
+          />
         </div>
 
-        {/* RIGHT SIDE: Product Info */}
+        {/* LEFT SIDE: Info */}
         <div className="md:w-1/2 flex flex-col pt-4">
-          <h1 className="text-4xl font-extrabold mb-2">{sanitize(product.title)}</h1>
-          <h2 className="text-xl text-gray-600 mb-6">Piano Solo • Professional Sheet Music</h2>
+          <h1 className="text-4xl font-extrabold mb-2 leading-tight">{product.title}</h1>
+          <h2 className="text-xl text-gray-500 mb-6 font-medium">תווים לפסנתר</h2>
           
           <div className="text-3xl font-bold mb-8">
             ₪{product.price}
           </div>
 
-          <div className="flex gap-4 mb-8">
-            <button className="bg-blue-600 text-white px-10 py-4 rounded-full font-bold hover:bg-blue-700 transition flex-1">
-              Add to Cart
-            </button>
-            <button className="border-2 border-blue-600 text-blue-600 px-10 py-4 rounded-full font-bold hover:bg-blue-50 transition flex-1">
-              Buy Now
-            </button>
-          </div>
+          <div className="flex gap-4 mb-10">
+  {/* We pass the 'product' data directly into our smart buttons */}
+  <div className="flex-1">
+    <AddToCartSingleProductBtn product={product} />
+  </div>
+  <div className="flex-1">
+    <BuyNowSingleProductBtn product={product} />
+  </div>
+</div>
 
-          <hr className="mb-8" />
+          {/* TIGHT METADATA SECTION */}
+          <div className="max-w-xs">
+            <h3 className="font-bold text-lg mb-4 text-blue-600 border-b-2 border-blue-600 w-fit pb-1">
+              פרטי מוצר
+            </h3>
+            
+            <div className="space-y-3">
+               {/* Artist Row */}
+               <div className="flex items-center gap-2 border-b border-gray-100 pb-1.5">
+                <span className="text-gray-400 text-sm w-20 flex-shrink-0">אמן/ית:</span>
+                <span className="font-semibold text-gray-800">{product.artist || "Keane "}</span>
+              </div>
 
-          {/* Metadata Section */}
-          <div className="space-y-4">
-            <h3 className="font-bold text-lg mb-4 text-blue-600">Details</h3>
-            <div className="grid grid-cols-2 border-b pb-2">
-              <span className="text-gray-500">Instruments:</span>
-              <span className="font-medium">Piano</span>
-            </div>
-            <div className="grid grid-cols-2 border-b pb-2">
-              <span className="text-gray-500">Format:</span>
-              <span className="font-medium">Digital PDF</span>
-            </div>
-          </div>
-
-          {/* Social Share */}
-          <div className="mt-8 flex items-center gap-4">
-            <span className="text-gray-500 font-semibold">Share:</span>
-            <div className="flex gap-3 text-3xl text-gray-400">
-              <FaSquareFacebook className="hover:text-blue-600 cursor-pointer" />
-              <FaSquareXTwitter className="hover:text-black cursor-pointer" />
-              <FaSquarePinterest className="hover:text-red-600 cursor-pointer" />
+              {/* Level Row */}
+              <div className="flex items-center gap-2 border-b border-gray-100 pb-1.5">
+                <span className="text-gray-400 text-sm w-20 flex-shrink-0">רמה:</span>
+                <span className="font-semibold text-gray-800">{product.scoring || "בינוני"}</span>
+              </div>
+              
+              {/* Instruments Row */}
+              <div className="flex items-center gap-2 border-b border-gray-100 pb-1.5">
+                <span className="text-gray-400 text-sm w-20 flex-shrink-0">כלים:</span>
+                <span className="font-semibold text-gray-800">{translateInstrument(product.instruments)}</span>
+              </div>
+              
+              {/* Pages Row */}
+              <div className="flex items-center gap-2 border-b border-gray-100 pb-1.5">
+                <span className="text-gray-400 text-sm w-20 flex-shrink-0">עמודים:</span>
+                <span className="font-semibold text-gray-800">{product.pages || "1"}</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* TABS SECTION */}
-      <div className="max-w-6xl mx-auto px-6 pb-20">
-        <ProductTabs product={product as any} />
       </div>
     </div>
   );

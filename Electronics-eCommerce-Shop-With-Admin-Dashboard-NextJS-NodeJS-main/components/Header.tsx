@@ -1,81 +1,89 @@
 "use client";
 import { usePathname } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import HeaderTop from "./HeaderTop";
 import Image from "next/image";
 import SearchInput from "./SearchInput";
 import Link from "next/link";
-import { FaBell } from "react-icons/fa6";
-
 import CartElement from "./CartElement";
-import NotificationBell from "./NotificationBell";
-import HeartElement from "./HeartElement";
 import { signOut, useSession } from "next-auth/react";
 import toast from "react-hot-toast";
-import { useWishlistStore } from "@/app/_zustand/wishlistStore";
 import apiClient from "@/lib/api";
 
 const Header = () => {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const pathname = usePathname();
-  const { wishlist, setWishlist, wishQuantity } = useWishlistStore();
 
   const handleLogout = () => {
     setTimeout(() => signOut(), 1000);
-    toast.success("Logout successful!");
+    toast.success("התנתקת בהצלחה!");
   };
 
   const getUserByEmail = async () => {
     if (session?.user?.email) {
-      apiClient.get(`/api/users/email/${session?.user?.email}`, {
-        cache: "no-store",
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          // wishlist fetching logic
+      try {
+        await apiClient.get(`/api/users/email/${session?.user?.email}`, {
+          cache: "no-store",
         });
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
     }
   };
 
   useEffect(() => {
     getUserByEmail();
-  }, [session?.user?.email, wishlist.length]);
+  }, [session?.user?.email]);
 
   return (
-    <header className="bg-white">
+    <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
       <HeaderTop />
-      {pathname.startsWith("/admin") === false && (
-        <div className="h-32 bg-white flex items-center justify-between px-16 max-[1320px]:px-16 max-md:px-6 max-lg:flex-col max-lg:gap-y-7 max-lg:justify-center max-lg:h-60 max-w-screen-2xl mx-auto">
-          <Link href="/">
-            <img src="/logo v1 svg.svg" width={300} height={300} alt="תווים כחול-לבן logo" className="relative right-5 max-[1023px]:w-56" />
-          </Link>
-          <SearchInput />
-          <div className="flex gap-x-10 items-center">
-            <NotificationBell />
-            <HeartElement wishQuantity={wishQuantity} />
-            <CartElement />
+      
+      {!pathname.startsWith("/admin") ? (
+        <div className="bg-white px-6 md:px-16 max-w-screen-2xl mx-auto h-24 flex items-center justify-between gap-4">
+          
+          {/* LOGO */}
+          <div className="flex-shrink-0 w-48 lg:w-64">
+            <Link href="/" className="relative h-12 w-full block">
+              <Image 
+                src="/logo v1 svg.svg" 
+                fill
+                alt="תווים כחול-לבן logo" 
+                className="object-contain object-right"
+                priority
+              />
+            </Link>
+          </div>
+
+          {/* SEARCH BAR (Centered) */}
+          <div className="flex-1 max-w-xl mx-auto">
+            <SearchInput />
+          </div>
+
+          {/* ACTIONS */}
+          <div className="flex items-center gap-x-6 flex-shrink-0 w-48 lg:w-64 justify-start">
+             <CartElement />
+             
+             {session ? (
+                <button onClick={handleLogout} className="text-sm font-medium text-gray-600 hover:text-red-600">
+                  התנתק
+                </button>
+             ) : (
+                <Link href="/login" className="text-sm font-medium text-blue-600 hover:underline">
+                  התחברות
+                </Link>
+             )}
           </div>
         </div>
-      )}
-      {pathname.startsWith("/admin") === true && (
-        <div className="flex justify-between h-32 bg-white items-center px-16 max-[1320px]:px-10 max-w-screen-2xl mx-auto max-[400px]:px-5">
+      ) : (
+        /* ADMIN NAV */
+        <div className="flex justify-between h-24 bg-white items-center px-6 md:px-16 max-w-screen-2xl mx-auto">
           <Link href="/">
-            <div className="font-extrabold text-3xl tracking-tight text-gray-900">
+            <div className="font-extrabold text-2xl tracking-tight text-gray-900">
               תווים <span className="text-blue-600">כחול-לבן</span>
+              <span className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded text-gray-500 uppercase">מנהל</span>
             </div>
           </Link>
-          <div className="flex gap-x-5 items-center">
-            <NotificationBell />
-            <div className="dropdown dropdown-end">
-              <div tabIndex={0} role="button" className="w-10">
-                <Image src="/randomuser.jpg" alt="profile" width={30} height={30} className="w-full h-full rounded-full" />
-              </div>
-              <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                <li><Link href="/admin">Dashboard</Link></li>
-                <li onClick={handleLogout}><a href="#">Logout</a></li>
-              </ul>
-            </div>
-          </div>
         </div>
       )}
     </header>
